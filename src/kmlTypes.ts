@@ -4,6 +4,22 @@ export class KmlFeature {
   features?: KmlFeature[];
 }
 
+export interface KmlPoint {
+  coordinates?: string;
+}
+
+export interface KmlLineString {
+  coordinates?: string;
+}
+
+export class KmlPlacemark extends KmlFeature {
+  styleUrl?: string; // Reference to a style (e.g., "#myStyle")
+  Point?: KmlPoint;
+  LineString?: KmlLineString;
+  //  Polygon?: KmlPolygon;
+  //  MultiGeometry?: KmlMultiGeometry;
+}
+
 export class KmlFolder extends KmlFeature {}
 
 export class KmlDocument extends KmlFeature {
