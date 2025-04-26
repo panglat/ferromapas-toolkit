@@ -1,28 +1,17 @@
-import { openKmzKml } from './kmlkmz';
+import { parse } from 'path';
+import { readKmlString } from './kmlkmzFileHandler';
+import { parseKmlString } from './kmlParserBuilder';
+import { parseKmlNode } from './kmlParser';
 
 const main = async () => {
-  /*
-  const filePath = process.argv[2];
-  if (!filePath) {
-    console.error("Usage: node kmlParser.js <path-to-kml-or-kmz-file>");
-    process.exit(1);
-  }
-*/
-
   // Read a KML or KMZ file
   const filePath = './ferromapas.kmz';
-  const ret = await openKmzKml(filePath);
-  console.log(ret);
-  /*
-  // Parse the KML string
-  const kml = parseKmlString(kmlString);
-
-  // Extract placemarks from the KML object
-  const placemarks = extractPlacemarks(kml);
-
-  // Print the extracted placemarks
-  console.log(placemarks);
-  */
+  const { kmlString, isKmz } = await readKmlString(filePath);
+  const kmlAsXml = parseKmlString(kmlString);
+  const kmlNode = kmlAsXml.find((node: any) => node?.kml)?.kml;
+  const kml = parseKmlNode(kmlNode);
+  console.log(kmlAsXml);
+  console.log(kml);
 };
 
 main();

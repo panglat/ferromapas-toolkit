@@ -109,8 +109,9 @@ function parseFeature(key: string, value: any): any {
 async function parseKml(kmlAsString: string) {
   // Parse the XML content into a JavaScript object
   const parser = new XMLParser({
-    ignoreAttributes: false,
-    attributeNamePrefix: '@_',
+    preserveOrder: true, // Mantiene el orden de los nodos
+    ignoreAttributes: false, // Conserva los atributos si los hay
+    alwaysCreateTextNode: true, // Garantiza que cada nodo tenga un valor
   });
   const parsedKml = parser.parse(kmlAsString);
 
