@@ -1,4 +1,4 @@
-import { Kml, KmlDocument, KmlFolder } from './kmlTypes';
+import { Kml, KmlDocument, KmlFeature, KmlFolder } from './kmlTypes';
 
 export function buildXmlHeader() {
   const xmlObject = {
@@ -19,45 +19,50 @@ export function buildKmlText(nodeName: string, text: string) {
   return { [nodeName]: [{ '#text': text }] };
 }
 
-export function buildKmlFolderNode(folder?: KmlFolder) {
+export function buildKmlFeatureNode(feature: KmlFeature) {
+  const xmlObject = [
+    feature?.name ? buildKmlText('name', feature.name) : null,
+    feature?.description
+      ? buildKmlText('description', feature.description)
+      : null,
+    Array.isArray(feature?.features)
+      ? feature?.features
+          ?.map((feature) => buildKmlFeature(feature))
+          .filter((node) => node !== null) // Filter out null values
+      : null,
+  ]
+    .filter((node) => node !== null) // Filter out null values
+    .flat(); // Flatten the array to remove nested arrays
+  return xmlObject;
+}
+
+export function buildKmlFolderNode(folder: KmlFolder) {
   const xmlObject = {
-    Folder: [
-      folder?.name ? buildKmlText('name', folder.name) : null,
-      folder?.description
-        ? buildKmlText('description', folder.description)
-        : null,
-    ].filter((node) => node !== null), // Filter out null values
+    Folder: buildKmlFeatureNode(folder),
+  };
+  return xmlObject;
+}
+
+export function buildKmlDocumentNode(document: KmlDocument): any {
+  const xmlObject = {
+    Document: buildKmlFeatureNode(document),
   };
 
   return xmlObject;
 }
 
-export function buildKmlDocumentNode(document?: KmlDocument): any {
-  const xmlObject = {
-    Document: [
-      document?.name ? buildKmlText('name', document.name) : null,
-      document?.description
-        ? buildKmlText('description', document.description)
-        : null,
-      document?.features
-        ?.map((feature) => {
-          if (feature instanceof KmlFolder) {
-            return buildKmlFolderNode(feature);
-          }
-          return null; // Explicitly return null for non-KmlFolder features
-        })
-        .filter((node) => node !== null), // Filter out null values
-    ]
-      .filter((node) => node !== null) // Filter out null values
-      .flat(), // Flatten the array to remove nested arrays
-  };
-
-  return xmlObject;
+export function buildKmlFeature(feature: KmlFeature): any {
+  if (feature instanceof KmlFolder) {
+    if (feature instanceof KmlFolder) {
+      return buildKmlFolderNode(feature);
+    }
+  }
+  return null; // Explicitly return null for non-KmlFolder features
 }
 
 export function buildKmlNode(kml: Kml): any {
   const xmlObject = {
-    kml: [buildKmlDocumentNode(kml?.kml?.Document)],
+    kml: [buildKmlDocumentNode(kml?.kml?.Document || {})],
     ':@': {
       '@_xmlns': 'http://www.opengis.net/kml/2.2',
       '@_xmlns:gx': 'http://www.google.com/kml/ext/2.2',

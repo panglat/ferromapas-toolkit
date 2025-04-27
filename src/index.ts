@@ -31,6 +31,7 @@ const main = async () => {
   );
   // Save the KML file
   await writeKmlKmz(xmlContent, './output.kml');
+  console.log('KML file saved successfully!');
 };
 
 main();
