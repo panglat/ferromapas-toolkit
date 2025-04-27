@@ -26,7 +26,7 @@ const main = async () => {
   const xmlContent = buildKmlString(kmlAsXmlBuilt);
   await fs.promises.writeFile(
     './output.json',
-    JSON.stringify(xmlContent, null, 2),
+    JSON.stringify(kmlAsXmlBuilt, null, 2),
     'utf8'
   );
   // Save the KML file
