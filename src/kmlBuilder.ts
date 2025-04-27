@@ -63,6 +63,25 @@ export function buildKmlPlacemarkNode(placemark: KmlPlacemark) {
             ],
           }
         : null,
+      placemark?.Polygon
+        ? {
+            Polygon: [
+              {
+                outerBoundaryIs: [
+                  {
+                    LinearRing: [
+                      buildKmlText(
+                        'coordinates',
+                        placemark?.Polygon?.outerBoundaryIs?.LinearRing
+                          ?.coordinates || ''
+                      ),
+                    ],
+                  },
+                ],
+              },
+            ],
+          }
+        : null,
     ].filter((node) => node !== null), // Filter out null values
   };
   return xmlObject;

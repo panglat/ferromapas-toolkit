@@ -4,9 +4,12 @@ import {
   KmlDocument,
   KmlFeature,
   KmlFolder,
+  KmlLinearRing,
   KmlLineString,
+  KmlOuterBoundaryIs,
   KmlPlacemark,
   KmlPoint,
+  KmlPolygon,
 } from './kmlTypes';
 
 function parseTextValue(
@@ -38,17 +41,22 @@ export function parseKmlFeatureNode<T extends KmlFeature>(
   const parsedFeature: T = node.reduce((acc: T, n: any) => {
     Object.entries(n).forEach(([key, value]) => {
       parseKmlFeature(key, value as [{ [key: string]: any }], acc);
-      if (key === 'Document') {
-        acc.features = acc.features || [];
-        acc.features.push(parseDocumentNode(value));
-      }
-      if (key === 'Folder') {
-        acc.features = acc.features || [];
-        acc.features.push(parseKmlFolderNode(value));
-      }
-      if (key === 'Placemark') {
-        acc.features = acc.features || [];
-        acc.features.push(parseKmlPlacemarkNode(value));
+      switch (key) {
+        case 'Document': {
+          acc.features = acc.features || [];
+          acc.features.push(parseDocumentNode(value));
+          break;
+        }
+        case 'Folder': {
+          acc.features = acc.features || [];
+          acc.features.push(parseKmlFolderNode(value));
+          break;
+        }
+        case 'Placemark': {
+          acc.features = acc.features || [];
+          acc.features.push(parseKmlPlacemarkNode(value));
+          break;
+        }
       }
     });
 
@@ -83,6 +91,48 @@ function parseKmlLineString(node: any): KmlLineString {
   }, {} as KmlLineString);
 }
 
+function parseKmlLinearRing(node: any): KmlLinearRing {
+  return node.reduce((acc: KmlLinearRing, n: any) => {
+    Object.entries(n).forEach(([key, value]) => {
+      switch (key) {
+        case 'coordinates':
+          const coordinates = parseTextValue(value as [{ [key: string]: any }]);
+          acc.coordinates = coordinates;
+      }
+    });
+    return acc;
+  }, {} as KmlLineString);
+}
+
+function parseKmlOuterBoundaryIsString(node: any): KmlOuterBoundaryIs {
+  return node.reduce((acc: KmlOuterBoundaryIs, n: any) => {
+    Object.entries(n).forEach(([key, value]) => {
+      switch (key) {
+        case 'LinearRing':
+          const linearRing = parseKmlLinearRing(value);
+          acc.LinearRing = linearRing;
+          break;
+      }
+    });
+    return acc;
+  }, {} as KmlOuterBoundaryIs);
+}
+
+function parseKmlPolygonString(node: any): KmlPolygon {
+  return node.reduce((acc: KmlPolygon, n: any) => {
+    Object.entries(n).forEach(([key, value]) => {
+      switch (key) {
+        case 'outerBoundaryIs':
+          const outerBoundaryIs = parseKmlOuterBoundaryIsString(
+            value as [{ [key: string]: any }]
+          );
+          acc.outerBoundaryIs = outerBoundaryIs;
+      }
+    });
+    return acc;
+  }, {} as KmlPolygon);
+}
+
 export function parseKmlPlacemarkNode(node: any): KmlPlacemark {
   const placemark: KmlPlacemark = parseKmlFeatureNode(node, new KmlPlacemark());
   node.forEach((n: any) => {
@@ -93,6 +143,9 @@ export function parseKmlPlacemarkNode(node: any): KmlPlacemark {
           break;
         case 'LineString':
           placemark.LineString = parseKmlLineString(value);
+          break;
+        case 'Polygon':
+          placemark.Polygon = parseKmlPolygonString(value);
           break;
       }
     });

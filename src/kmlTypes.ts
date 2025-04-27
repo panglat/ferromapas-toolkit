@@ -12,11 +12,35 @@ export interface KmlLineString {
   coordinates?: string;
 }
 
+/**
+ * Represents a LinearRing, which is used to define boundaries in polygons.
+ */
+export interface KmlLinearRing {
+  coordinates?: string;
+}
+
+export interface KmlOuterBoundaryIs {
+  LinearRing: KmlLinearRing;
+}
+
+/**
+ * Represents a KML Polygon geometry.
+ * A polygon has an outer boundary and, optionally, inner boundaries (holes).
+ */
+export interface KmlPolygon {
+  outerBoundaryIs: KmlOuterBoundaryIs;
+  innerBoundaryIs?:
+    | {
+        LinearRing: KmlLinearRing;
+      }
+    | Array<{ LinearRing: KmlLinearRing }>;
+}
+
 export class KmlPlacemark extends KmlFeature {
   styleUrl?: string; // Reference to a style (e.g., "#myStyle")
   Point?: KmlPoint;
   LineString?: KmlLineString;
-  //  Polygon?: KmlPolygon;
+  Polygon?: KmlPolygon;
   //  MultiGeometry?: KmlMultiGeometry;
 }
 
